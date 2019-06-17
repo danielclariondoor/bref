@@ -218,7 +218,7 @@ ENV XML2_BUILD_DIR=${BUILD_DIR}/xml2
 
 RUN set -xe; \
     mkdir -p ${XML2_BUILD_DIR}; \
-# Download and upack the source code
+# Download and unpack the source code
     curl -Ls http://xmlsoft.org/sources/libxml2-${VERSION_XML2}.tar.gz \
   | tar xzC ${XML2_BUILD_DIR} --strip-components=1
 
@@ -277,65 +277,29 @@ RUN set -xe; \
     cmake  --build . --target install
 
 ###############################################################################
-# LIBSODIUM Build
-# https://github.com/jedisct1/libsodium/releases
-# Uses:
-#
+# Libxslt Build
+# https://github.com/GNOME/libxslt/releases
 # Needed by:
 #   - php
-ARG libsodium
-ENV VERSION_LIBSODIUM=${libsodium}
-ENV LIBSODIUM_BUILD_DIR=${BUILD_DIR}/libsodium
+ARG libxslt
+ENV VERSION_LIBXSLT=${libxslt}
+ENV LIBXSLT_BUILD_DIR=${BUILD_DIR}/libxslt
 
 RUN set -xe; \
-    mkdir -p ${LIBSODIUM_BUILD_DIR}; \
-# Download and upack the source code
-    curl -Ls https://github.com/jedisct1/libsodium/archive/${VERSION_LIBSODIUM}.tar.gz \
-  | tar xzC ${LIBSODIUM_BUILD_DIR} --strip-components=1
+    mkdir -p ${LIBXSLT_BUILD_DIR}/bin; \
+    curl -Ls http://xmlsoft.org/sources/libxslt-${VERSION_LIBXSLT}.tar.gz \
+    | tar xzC ${LIBXSLT_BUILD_DIR} --strip-components=1
 
-# Move into the unpackaged code directory
-WORKDIR  ${LIBSODIUM_BUILD_DIR}/
-
-# Configure the build
+WORKDIR  ${LIBXSLT_BUILD_DIR}/
+RUN set -xe; sed -i s/3000/5000/ libxslt/transform.c doc/xsltproc.{1,xml}
 RUN set -xe; \
     CFLAGS="" \
     CPPFLAGS="-I${INSTALL_DIR}/include  -I/usr/include" \
     LDFLAGS="-L${INSTALL_DIR}/lib64 -L${INSTALL_DIR}/lib" \
-    ./autogen.sh \
-&& ./configure --prefix=${INSTALL_DIR}
+    ./configure --prefix=${INSTALL_DIR} --disable-static
 
-RUN set -xe; \
-    make install
+RUN set -xe; cd ${LIBXSLT_BUILD_DIR} && make && make install
 
-###############################################################################
-# Postgres Build
-# https://github.com/postgres/postgres/releases/
-# Needs:
-#   - OpenSSL
-# Needed by:
-#   - php
-ARG postgres
-ENV VERSION_POSTGRES=${postgres}
-ENV POSTGRES_BUILD_DIR=${BUILD_DIR}/postgres
-
-RUN set -xe; \
-    mkdir -p ${POSTGRES_BUILD_DIR}/bin; \
-    curl -Ls https://github.com/postgres/postgres/archive/REL${VERSION_POSTGRES//./_}.tar.gz \
-    | tar xzC ${POSTGRES_BUILD_DIR} --strip-components=1
-
-
-WORKDIR  ${POSTGRES_BUILD_DIR}/
-
-RUN set -xe; \
-    CFLAGS="" \
-    CPPFLAGS="-I${INSTALL_DIR}/include  -I/usr/include" \
-    LDFLAGS="-L${INSTALL_DIR}/lib64 -L${INSTALL_DIR}/lib" \
-    ./configure --prefix=${INSTALL_DIR} --with-openssl --without-readline
-
-RUN set -xe; cd ${POSTGRES_BUILD_DIR}/src/interfaces/libpq && make && make install
-RUN set -xe; cd ${POSTGRES_BUILD_DIR}/src/bin/pg_config && make && make install
-RUN set -xe; cd ${POSTGRES_BUILD_DIR}/src/backend && make generated-headers
-RUN set -xe; cd ${POSTGRES_BUILD_DIR}/src/include && make install
 
 ###############################################################################
 # PHP Build
@@ -345,7 +309,7 @@ RUN set -xe; cd ${POSTGRES_BUILD_DIR}/src/include && make install
 #   - libxml2
 #   - openssl
 #   - readline
-#   - sodium
+#   - xsl
 
 ARG php
 # Setup Build Variables
@@ -398,7 +362,6 @@ RUN set -xe \
         --enable-cli \
         --disable-phpdbg \
         --disable-phpdbg-webhelper \
-        --with-sodium \
         --with-readline \
         --with-openssl \
         --with-zlib=${INSTALL_DIR} \
@@ -408,15 +371,12 @@ RUN set -xe \
         --enable-ftp \
         --with-gettext \
         --enable-mbstring \
-        --with-pdo-mysql=shared,mysqlnd \
-        --with-mysqli \
         --enable-pcntl \
         --enable-zip \
         --enable-bcmath \
-        --with-pdo-pgsql=shared,${INSTALL_DIR} \
         --enable-intl=shared \
         --enable-opcache-file \
-        --enable-soap
+        --with-xsl=${INSTALL_DIR}
 RUN make -j $(nproc)
 # Run `make install` and override PEAR's PHAR URL because pear.php.net is down
 RUN set -xe; \
