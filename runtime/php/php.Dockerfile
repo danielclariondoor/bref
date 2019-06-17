@@ -98,7 +98,6 @@ RUN set -xe; \
 # Move into the unpackaged code directory
 WORKDIR  ${OPENSSL_BUILD_DIR}/
 
-
 # Configure the build
 RUN set -xe; \
     CFLAGS="" \
@@ -169,7 +168,6 @@ RUN set -xe; \
             mkdir -p ${CURL_BUILD_DIR}/bin; \
 curl -Ls https://github.com/curl/curl/archive/curl-${VERSION_CURL//./_}.tar.gz \
 | tar xzC ${CURL_BUILD_DIR} --strip-components=1
-
 
 WORKDIR  ${CURL_BUILD_DIR}/
 
@@ -300,7 +298,6 @@ RUN set -xe; \
 
 RUN set -xe; cd ${LIBXSLT_BUILD_DIR} && make && make install
 
-
 ###############################################################################
 # PHP Build
 # https://github.com/php/php-src/releases
@@ -376,7 +373,9 @@ RUN set -xe \
         --enable-bcmath \
         --enable-intl=shared \
         --enable-opcache-file \
-        --with-xsl=${INSTALL_DIR}
+        --with-xsl=${INSTALL_DIR} \
+        --with-gd
+
 RUN make -j $(nproc)
 # Run `make install` and override PEAR's PHAR URL because pear.php.net is down
 RUN set -xe; \
@@ -384,10 +383,6 @@ RUN set -xe; \
  { find ${INSTALL_DIR}/bin ${INSTALL_DIR}/sbin -type f -perm +0111 -exec strip --strip-all '{}' + || true; }; \
  make clean; \
  cp php.ini-production ${INSTALL_DIR}/etc/php/php.ini
-
-RUN pecl install mongodb
-RUN pecl install redis
-RUN pecl install APCu
 
 RUN set -xe; \
     curl -Ls https://elasticache-downloads.s3.amazonaws.com/ClusterClient/PHP-7.0/latest-64bit \
@@ -408,7 +403,6 @@ RUN set -xe; \
  && ./configure \
  && make \
  && make install
-
 
 # Strip all the unneeded symbols from shared libraries to reduce size.
 RUN find ${INSTALL_DIR} -type f -name "*.so*" -o -name "*.a"  -exec strip --strip-unneeded {} \;

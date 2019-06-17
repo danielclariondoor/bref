@@ -14,21 +14,21 @@ LABEL vendor1="Signature Tech Studio, Inc."
 LABEL vendor2="bref"
 LABEL home="https://github.com/brefphp/bref"
 
-
 # Working Directory
 WORKDIR /tmp
 
-
 # Lambda is based on 2017.03. Lock YUM to that release version.
 RUN sed -i 's/releasever=latest/releaserver=2017.03/' /etc/yum.conf
-
 
 RUN set -xe \
 # Download yum repository data to cache
  && yum makecache \
 # Default Development Tools
- && yum groupinstall -y "Development Tools"  --setopt=group_package_types=mandatory,default
-
+ && yum groupinstall -y "Development Tools"  --setopt=group_package_types=mandatory,default \
+ && yum -y install libxml2-devel \
+        openssl-devel \
+        libpng-devel \
+        libjpeg-devel
 
 # CMAKE - cross-platform family of tools designed to build, test and package software. The
 # version of cmake we can get from the yum repo is 2.8.12. We need cmake to build a few of
