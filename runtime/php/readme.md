@@ -12,7 +12,7 @@ From this directory, simply type:
 
 *Generate PHP 7.3*
 ```bash
-export REGION=YOURREGION
+export REGION=us-west-2
 make compiler
 make build
 make distribution
