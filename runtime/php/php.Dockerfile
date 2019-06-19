@@ -299,6 +299,31 @@ RUN set -xe; \
 RUN set -xe; cd ${LIBXSLT_BUILD_DIR} && make && make install
 
 ###############################################################################
+# LIBPNG Build
+# Needed by:
+#   - gd
+ENV LIBPNG_BUILD_DIR=${BUILD_DIR}/libpng
+
+RUN set -xe; \
+    mkdir -p ${LIBPNG_BUILD_DIR}; \
+    # Download and upack the source code
+    curl -Ls https://sourceforge.net/projects/libpng/files/libpng16/1.6.37/libpng-1.6.37.tar.gz/download \
+  | tar xzC ${LIBPNG_BUILD_DIR} --strip-components=1
+
+# Move into the unpackaged code directory
+WORKDIR  ${LIBPNG_BUILD_DIR}/
+
+# Configure the build
+RUN set -xe; \
+    CFLAGS="" \
+    CPPFLAGS="-I${INSTALL_DIR}/include  -I/usr/include" \
+    LDFLAGS="-L${INSTALL_DIR}/lib64 -L${INSTALL_DIR}/lib" \
+    ./configure --prefix=${INSTALL_DIR} --disable-static
+
+RUN set -xe; \
+    make install
+
+###############################################################################
 # PHP Build
 # https://github.com/php/php-src/releases
 # Needs:
@@ -374,7 +399,8 @@ RUN set -xe \
         --enable-intl=shared \
         --enable-opcache-file \
         --with-xsl=${INSTALL_DIR} \
-        --with-gd
+        --with-gd \
+        --with-png-dir=${INSTALL_DIR}
 
 RUN make -j $(nproc)
 # Run `make install` and override PEAR's PHAR URL because pear.php.net is down
