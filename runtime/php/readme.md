@@ -13,13 +13,14 @@ From this directory, simply type:
 *Generate PHP 7.3*
 ```bash
 export REGION=us-west-2
+export BREF=0.5.11
 make compiler
 make build
 make distribution
 aws lambda publish-layer-version --region us-west-2 --layer-name php73-fpm --description "bref-php-fpm" --license-info MIT --zip-file fileb://../export/php-73-fpm.zip --compatible-runtimes provided --output text --query Version
 aws lambda publish-layer-version --region us-west-2 --layer-name php73 --description "bref-php" --license-info MIT --zip-file fileb://../export/php-73.zip --compatible-runtimes provided --output text --query Version
-
 ```
+
 ### What does that actually do?
 First, it either creates the 'bref/runtime/compiler:latest' image, or verifies that it is properly cached. Next, we build php by creating the 'bref/runtime/php:latest' image, or verifying that it is properly cached. Then, we build the 'bref/runtime/dist:latest', it is never cached. From it, we copy out the zip files to the local hosts `exports` directory.
 
