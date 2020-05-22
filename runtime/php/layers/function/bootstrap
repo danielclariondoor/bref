@@ -9,6 +9,3 @@ do
     # written on the output ends up in Cloudwatch automatically
     /opt/bin/php $LAMBDA_TASK_ROOT/$_HANDLER 2>&1
 done
-
-# Start NewRelic daemon
-/opt/bref/sbin/newrelic-daemon -c /opt/bref/etc/newrelic/newrelic.cfg

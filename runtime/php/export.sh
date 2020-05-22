@@ -24,13 +24,12 @@ rm bref/etc/php/conf.d/bref.ini
 # Create the PHP FPM layer
 # Add files specific to this layer
 cp /layers/fpm/bootstrap bootstrap
-cp /layers/fpm/bootstrap-php bootstrap-php
-chmod 755 bootstrap bootstrap-php
+chmod 755 bootstrap
 cp /layers/fpm/php.ini bref/etc/php/conf.d/bref.ini
 cp /layers/fpm/php-fpm.conf bref/etc/php-fpm.conf
 # Zip the layer
 zip --quiet --recurse-paths /export/php-${PHP_SHORT_VERSION}-fpm.zip . --exclude "*php-cgi"
 # Cleanup the files specific to this layer
-rm bootstrap bootstrap-php
+rm bootstrap
 rm bref/etc/php/conf.d/bref.ini
 rm bref/etc/php-fpm.conf
