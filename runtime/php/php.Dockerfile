@@ -336,8 +336,9 @@ RUN \
 RUN echo $' \n\
 extension = "newrelic.so" \n\
 newrelic.appname = "QuotingPortal" \n\
-newrelic.license = "XXXXXXXXXXXXXXXXXXX" \n\
+newrelic.license = "485399637409f4456a3f66db12c8377c50fa3549" \n\
 newrelic.logfile = "/dev/null" \n\
+newrelic.loglevel = "error" \n\
 ' >> ${INSTALL_DIR}/etc/php/php.ini
 
 RUN mkdir -p ${INSTALL_DIR}/etc/newrelic && \
